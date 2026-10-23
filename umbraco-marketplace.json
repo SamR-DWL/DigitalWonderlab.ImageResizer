@@ -1,0 +1,27 @@
+{
+  "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+  "AuthorDetails": {
+    "Name": "Digital Wonderlab",
+    "Description": "As a proud Certified B Corporation\u00ae, we are passionate about amplifying the voices and visions of purpose-driven start-ups, SMEs, not-for-profits, and global enterprises.",
+    "Url": "https://digitalwonderlab.com",
+    "Contributors": [
+      {
+        "Name": "Sam Robinson"
+      }
+    ],
+    "SyncContributorsFromRepository": false
+  },
+  "Category": "Developer Tools",
+  "IssueTrackerUrl": "",
+  "Description": "Reduce the size of all your images across your umbraco instance. Big images can cause a multitude of problems including slow load times, bulky storage and take up unnecessary bandwidth. With a few simple clicks reduce the size of your images and even compress them",
+  "LicenseTypes": [ "Free" ],
+  "PackageType": "Package",
+  "Screenshots": [
+    {
+      "ImageUrl": "https://i.postimg.cc/FzgSL9Xf/Screenshot-2026-10-23-163651.png"
+    }
+  ],
+  "Tags": [ "Developer Tools" ],
+  "Title": "Digitalwonderlab's Image Resizer",
+  "VersionDependencyMode": "SemVer"
+}

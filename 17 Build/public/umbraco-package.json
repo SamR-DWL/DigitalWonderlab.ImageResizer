@@ -1,0 +1,25 @@
+{
+  "$schema": "../../umbraco-package-schema.json",
+  "name": "Digital Wonderlab Image Resizer",
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "type": "dashboard",
+      "alias": "DWL.ImageResizer.Dashboard",
+      "name": "Image Resizer Dashboard",
+      "element": "/App_Plugins/DWL.ImageResizer/media-resizer.js",
+      "elementName": "media-resizer-dashboard",
+      "weight": 10,
+      "meta": {
+        "label": "Image Resizer",
+        "pathname": "image-resizer"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Media"
+        }
+      ]
+    }
+  ]
+}

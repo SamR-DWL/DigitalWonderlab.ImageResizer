@@ -1,0 +1,19 @@
+{
+  "dashboards": [
+    {
+      "alias": "dwlImageResizer",
+      "view": "/App_Plugins/DWL.ImageResizer/v13/MediaResizer.html",
+      "sections": [ "media" ],
+      "weight": 10,
+      "access": [
+        { "grant": "admin" }
+      ]
+    }
+  ],
+  "javascript": [
+    "~/App_Plugins/DWL.ImageResizer/v13/mediaresizer.controller.js"
+  ],
+  "css": [
+    "~/App_Plugins/DWL.ImageResizer/v13/mediaresizer.css"
+  ]
+}

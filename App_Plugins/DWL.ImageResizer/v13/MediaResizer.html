@@ -1,0 +1,510 @@
+﻿<div class="media-resizer" ng-controller="DWLMediaResizerController as vm">
+    <div class="section-containers" id="detail-content" ng-show="showSection == 'Images'">
+        <h3>Digital Wonderlab Image Resizer</h3>
+        <div class="settings">
+            <p class="initial-setting-text">Smaller images load faster. Use this plugin to easily reduce the size of images that have been uploaded at a larger width than you need to a new maximum width of your choice. Then choose a compression level to further reduce the file size.</p>
+            <p class="initial-setting-text">Note: It is always possible that further compression has already been applied to your images using alternative sources that may be better for your images. Where the file size increases in the process we will leave the previous image as it is.</p>
+            <uui-form>
+                <form id="MyForm" name="myForm">
+                    <div class="settings-container">
+                        <div class="settings-container__width-setting">
+                            <h5 class="settings-container__title">1. Max Width</h5>
+                            <p class="small-text">Images exceeding this width will be resized while preserving their aspect ratio. Typically, 2400px suffices, but feel free to adjust as needed.</p>
+                            <uui-input class="input-field max-width"
+                                       type="number"
+                                       label="Max width"
+                                       min="0"
+                                       placeholder="eg. 2400"
+                                       value="2400"
+                                       id="max-width"
+                                       required="true">
+                                <div slot="append" class="settings-container__width-setting__append">
+                                    px
+                                </div>
+                            </uui-input>
+                            <uui-checkbox id="ignore-max-width" name="ignore-max-width" label="Ignore Max Width" class="settings-container__width-setting__ignore-max" ng-click="ignoreMaxWidth()">
+                                <span>
+                                    No thanks, I don’t want to change the width of my images.
+                                    <p class="small-text normal-text">All of your images will be listed for resize.</p>
+                                </span>
+                            </uui-checkbox>
+                        </div>
+                        <div class="settings-container__compression-setting">
+                            <h5 class="settings-container__title">2. Compression Level</h5>
+                            <p class="small-text normal-text">A higher level of compression will result in a lower file size, but with a greater reduction in image quality.</p>
+
+                            <div class="settings-container__compression-setting__btn-container">
+                                <uui-button type="button" label="Compression Level: None" look="outline" class="compression-level-select-button" ng-click="changeCompressionLevel('none')">
+                                    <span><strong>None</strong></span><br />
+                                    <div class="h-3px"></div>
+                                    <span class="grey-text">No compression added</span>
+                                </uui-button>
+                                <uui-button type="button" label="Compression Level: Minimum" look="outline" class="compression-level-select-button" ng-click="changeCompressionLevel('low')">
+                                    <span><strong>Minimum</strong></span><br />
+                                    <div class="h-3px"></div>
+                                    <span class="grey-text">25% compression added</span>
+                                </uui-button>
+                                <uui-button type="button" label="Compression Level: Medium" look="outline" class="compression-level-select-button selected" ng-click="changeCompressionLevel('medium')">
+                                    <span><strong>Medium (recommended)</strong></span><br />
+                                    <div class="h-3px"></div>
+                                    <span class="grey-text">50% compression added</span>
+                                </uui-button>
+                                <uui-button type="button" label="Compression Level: Maximum" look="outline" class="compression-level-select-button" ng-click="changeCompressionLevel('high')">
+                                    <span><strong>Maximum</strong></span><br />
+                                    <div class="h-3px"></div>
+                                    <span class="grey-text">75% compression added</span>
+                                </uui-button>
+                            </div>
+
+                            <uui-button class="compression-level-help-btn" type="button" look="default" color="default" label="Which should I choose?" ng-click="showHideDialog('CompressionLevelInfo')">
+                                <uui-icon-registry-essential>
+                                    <uui-icon name="info" class="icon info-icon compression-level-help-btn-icon"></uui-icon>
+                                </uui-icon-registry-essential>
+                                <span class="compression-level-help-txt">Which should I choose?</span>
+                            </uui-button>
+
+                        </div>
+                    </div>
+                    <div class="form-buttons">
+                        <uui-button type="reset" label="Reset" look="secondary">Reset</uui-button>
+                        <uui-button id="preview-button" type="submit" label="Analyse Images" look="primary" ng-click="previewAffectedFiles()" class="primary-form-button preview-affected-files-button">
+                            Analyse Images...
+                        </uui-button>
+                        <div class="loader preview-loader" style="display:none; align-items: center;">
+                            <uui-loader-circle class="preview-loader-circle"></uui-loader-circle>
+                            <p class="preview-loader-txt">Analysing images... <span ng-if="vm.totalItemsFound != 0"> Found {{ vm.totalItemsFound }} items</span></p>
+                        </div>
+                    </div>
+                    <div class="form-outro-container">
+                        <p class="small-text form-outro-txt">Before processing, you can preview how your images will appear with these settings on the Confirmation screen.</p>
+
+                        <div class="d-flex align-items-center gap-3" style="font-weight: 600">
+                            <a target="_blank" href="https://digitalwonderlab.com">
+                                <img class="powered-img" height="40" width="40" alt="Digital Wonderlab" src="/App_Plugins/DWL.ImageResizer/image-resizer-icon.png" />
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </uui-form>
+        </div>
+    </div>
+
+    <div class="section-containers" ng-show="showSection == 'Show Image Previews'">
+        <div class="preview-view-intro">
+            <div class="text">
+                <h3 ng-if="vm.sortedMediaItems.length != 0">Images to Resize</h3>
+                <h4 ng-if="vm.sortedMediaItems.length == 0">All images are below the max width</h4>
+                <p ng-if="vm.sortedMediaItems.length == 0" style="max-width: 850px;">None of your images go over your specified maximum width.<br /><br /> To resize images, try reducing the max width or select the option <i>"No thanks, I don’t want to change the width of my images"</i> to ignore the max width and include all images.</p>
+                <p ng-if="vm.sortedMediaItems.length != 0" class="results-summary-text small-text">Found {{ vm.sortedMediaItems.length }} images <span ng-if="maxWidthSpecified">that go over your max width </span>in the {{ foundFolders.length }} folders that were searched through.</p>
+                <p ng-if="vm.sortedMediaItems.length != 0">{{ vm.resizableMediaItems.length }} images can be resized. These images currently total {{ vm.sizeOfCurrentSelection }}mb.</p>
+            </div>
+            <div class="preview-btn-container">
+                <uui-button type="button" label="Back" look="secondary" ng-click="toggleSection('Images')">Back</uui-button>
+                <uui-button ng-if="vm.sortedMediaItems.length != 0" type="button" label="Continue" look="primary" ng-click="toggleSection('Confirmation')" class="primary-form-button continue-button">Covert selected images...</uui-button>
+            </div>
+        </div>
+        <div class="preview-info-section" ng-if="vm.sortedMediaItems.length != 0">
+            <uui-icon-registry-essential>
+                <uui-icon name="info" class="icon info-icon preview-info-icon"></uui-icon>
+            </uui-icon-registry-essential>
+            <p class="preview-info-txt">The recommended maximum file size is 1mb or less<span ng-if="!maxWidthSpecified"> and our general recommended maximum width is 2400px or less</span>. Anything above this<span ng-if="maxWidthSpecified"> (or your specified maximum width)</span> will be marked below in red.</p>
+        </div>
+        <div class="secondary-actions" ng-if="vm.sortedMediaItems.length != 0">
+            <uui-toggle label="Only show files that can be resized." class="show-files-toggle"></uui-toggle>
+            <uui-toggle label="Only show files that are over recommended limits." class="show-only-recommended-toggle"></uui-toggle>
+            <uui-button type="button" label="Download as CSV" ng-click="vm.downloadCSVOfPreviewTable()" look="outline">Download Table as CSV</uui-button>
+        </div>
+        <div class="preview-list" ng-class="{ 'expanded': previewListState === 'expanded' }" ng-if="vm.sortedMediaItems.length != 0">
+            <uui-table aria-label="file preview table" class="preview-list-table">
+
+                <!-- Apply styles to the uui-table-column to style the columns. You must have the same number of this elements as you have columns -->
+                <uui-table-column style="width: 5%;"></uui-table-column>
+                <uui-table-column style="width: 20%;"></uui-table-column>
+                <uui-table-column style="width: 7.5%;"></uui-table-column>
+                <uui-table-column style="width: 12.5%;"></uui-table-column>
+                <uui-table-column style="width: 15%;"></uui-table-column>
+                <uui-table-column style="width: 15%;"></uui-table-column>
+                <uui-table-column style="width: 12.5%;"></uui-table-column>
+                <uui-table-column style="width: 12.5%;"></uui-table-column>
+
+                <uui-table-head>
+                    <uui-table-head-cell>
+                        <div class="master-checkbox-container">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(162, 161, 166, 1); transform:; msFilter:;"><path d="M20 2H8c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zM8 16V4h12l.002 12H8z"></path><path d="M4 8H2v12c0 1.103.897 2 2 2h12v-2H4V8zm8.933 3.519-1.726-1.726-1.414 1.414 3.274 3.274 5.702-6.84-1.538-1.282z"></path></svg>
+                            <uui-checkbox checked class="master-checkbox"></uui-checkbox>
+                        </div>
+                    </uui-table-head-cell>
+                    <uui-table-head-cell>File Name</uui-table-head-cell>
+                    <uui-table-head-cell>Type</uui-table-head-cell>
+                    <uui-table-head-cell>Parent Folder</uui-table-head-cell>
+                    <uui-table-head-cell>Owner</uui-table-head-cell>
+                    <uui-table-head-cell>Last Modified</uui-table-head-cell>
+                    <uui-table-head-cell class="selectable-table-head-cell file-size-table-head" ng-click="switchTableSort('file size')" title="Sort by file size">File Size <span class="sorting-chevron" style="font-size: 10px; padding-left: 3px;">&#x25BC;</span></uui-table-head-cell>
+                    <uui-table-head-cell class="selectable-table-head-cell width-table-head" ng-click="switchTableSort('width')" title="Sort by width">Width <span class="sorting-chevron" style="font-size: 10px; padding-left: 3px;">&#x25BC;</span></uui-table-head-cell>
+                </uui-table-head>
+
+                <uui-table-row ng-repeat="item in vm.sortedMediaItems | limitTo: tableLimit" ng-class="{ 'not-resizable': !item.resizable }" ng-show="showFiles == 'all' || item.resizable" id="table-item-{{ item.id }}">
+                    <uui-table-cell>
+                        <uui-checkbox ng-if="item.resizable" checked class="single-checkbox" ng-class="{{ item.id }}" id="checkbox-{{ item.id }}"></uui-checkbox>
+                        <uui-checkbox ng-if="!item.resizable" disabled></uui-checkbox>
+                    </uui-table-cell>
+                    <uui-table-cell>
+                        <uui-icon-registry-essential ng-if="!item.resizable" ng-click="showHideDialog('Info')">
+                            <uui-icon name="info" class="icon info-icon"></uui-icon>
+                        </uui-icon-registry-essential>
+                        <a class="item-name" target="_blank" href="/umbraco/#/media/media/edit/{{ item.id }}">{{ item.name }}</a>
+                    </uui-table-cell>
+                    <uui-table-cell class="grey-text">{{ item.fileType }}</uui-table-cell>
+                    <uui-table-cell class="grey-text">{{ item.folder }}</uui-table-cell>
+                    <uui-table-cell class="grey-text">{{ item.owner }}</uui-table-cell>
+                    <uui-table-cell class="smaller-text grey-text">{{ item.updateDate }}</uui-table-cell>
+                    <uui-table-cell>
+                        <!-- uui-tag changes color depending on if the value is over the limit or not. The limit is hardcoded in. -->
+                        <uui-tag ng-if="item.sizeNotFixed > 1" color="danger" look="outline" class="fs-12px">
+                            <uui-icon-registry-essential class="icon-container">
+                                <uui-icon name="alert" class="icon mr-3px"></uui-icon>
+                            </uui-icon-registry-essential>
+                            {{ item.size }}mb
+                        </uui-tag>
+                        <uui-tag ng-if="item.sizeNotFixed <= 1" color="positive" look="outline" class="fs-12px">
+                            <uui-icon-registry-essential class="icon-container">
+                                <uui-icon name="check" class="icon mr-3px"></uui-icon>
+                            </uui-icon-registry-essential>
+                            {{ item.size }}mb
+                        </uui-tag>
+                    </uui-table-cell>
+                    <uui-table-cell>
+                        <!-- uui-tag changes color depending on if the value is over the limit / not over the limit / not specified. The limit depends on the value provided by the user, if any -->
+                        <uui-tag ng-if="(item.width > maxWidth) && maxWidthSpecified" color="danger" look="outline" class="fs-12px">
+                            <uui-icon-registry-essential class="icon-container">
+                                <uui-icon name="alert" class="icon mr-3px"></uui-icon>
+                            </uui-icon-registry-essential>
+                            {{ item.width }}px
+                        </uui-tag>
+                        <uui-tag ng-if="(item.width <= maxWidth) && maxWidthSpecified" color="positive" look="outline" class="fs-12px">
+                            <uui-icon-registry-essential class="icon-container">
+                                <uui-icon name="check" class="icon mr-3px"></uui-icon>
+                            </uui-icon-registry-essential>
+                            {{ item.width }}px
+                        </uui-tag>
+                        <uui-tag ng-if="(item.width > 2400) && !maxWidthSpecified" color="danger" look="outline" class="fs-12px">
+                            <uui-icon-registry-essential class="icon-container">
+                                <uui-icon name="alert" class="icon mr-3px"></uui-icon>
+                            </uui-icon-registry-essential>
+                            {{ item.width }}px
+                        </uui-tag>
+                        <uui-tag ng-if="(item.width <= 2400) && !maxWidthSpecified" color="positive" look="outline" class="fs-12px">
+                            <uui-icon-registry-essential class="icon-container">
+                                <uui-icon name="check" class="icon mr-3px"></uui-icon>
+                            </uui-icon-registry-essential>
+                            {{ item.width }}px
+                        </uui-tag>
+                    </uui-table-cell>
+                </uui-table-row>
+            </uui-table>
+            <div class="view-all" ng-if="vm.sortedMediaItems.length > 50">
+                <uui-button type="button" label="View all files" look="secondary" ng-click="expandTable()" class="view-all-button">View All</uui-button>
+                <p class="view-all-some-hidden">Some files have been hidden from this list as it has over 50 items.</p>
+                <p class="grey-text view-all-some-select">
+                    You can select or deselect these items by selecting/deselecting all (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(162, 161, 166, 1); max-width: 15px; vertical-align: middle; padding-left: 2px; padding-right: 2px; transform:; msFilter:;"><path d="M20 2H8c-1.103 0-2 .897-2 2v12c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zM8 16V4h12l.002 12H8z"></path><path d="M4 8H2v12c0 1.103.897 2 2 2h12v-2H4V8zm8.933 3.519-1.726-1.726-1.414 1.414 3.274 3.274 5.702-6.84-1.538-1.282z"></path></svg>) at the top of the table.<br />Alternatively, you can click "View All" to expand the table.
+                </p>
+            </div>
+            <div class="loader-overlay hidden">
+                <uui-loader-circle style="width: 25px; height: 25px;"></uui-loader-circle>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-containers confirmation-screen" ng-show="showSection == 'Confirmation'">
+        <div class="confirmation-section">
+            <div>
+                <h3>Confirmation</h3>
+                <h4>Are you sure you want to resize {{vm.selectedMediaItems.length}} images?</h4>
+                <p ng-if="maxWidthSpecified">This will resize the images to match your maximum width.</p>
+                <p ng-if="!maxWidthSpecified">This will compress the images based on your chosen Compression Level.</p>
+            </div>
+            <div class="confirmation-section-btn-container">
+                <uui-button type="button" label="Download a Preview" look="outline" color="default" ng-click="showHideDialog('DownloadPreviewConfirmation')" class="primary-form-button download-preview-button" style="margin-left: 0;">
+                    Download a Preview
+                </uui-button>
+                <uui-button type="button" label="Download a Backup" look="outline" color="default" ng-click="showHideDialog('DownloadBackupConfirmation')" class="primary-form-button download-backup-button" style="margin-right: 6px;">
+                    Download a Backup
+                </uui-button>
+                <uui-icon-registry-essential ng-click="showHideDialog('DownloadPreviewsInfo')">
+                    <uui-icon name="info" class="icon info-icon"></uui-icon>
+                </uui-icon-registry-essential>
+            </div>
+        </div>
+        <div class="value-summary mb-0">
+            <div ng-if="maxWidthSpecified == true">
+                <h6 class="heading">New Max Width</h6>
+                <p>{{maxWidth}}px</p>
+            </div>
+            <div>
+                <h6 class="heading">Compression Level</h6>
+                <p ng-if="compressionLevel == 'none'">None</p>
+                <p ng-if="compressionLevel == 'low'">Minimum</p>
+                <p ng-if="compressionLevel == 'medium'">Medium</p>
+                <p ng-if="compressionLevel == 'high'">Maximum</p>
+            </div>
+        </div>
+        <div class="warning" ng-show="showInnerSection == 'Resize'">
+            <uui-icon-registry-essential class="icon-container">
+                <uui-icon name="alert" class="icon"></uui-icon>
+            </uui-icon-registry-essential>
+            <div class="confirmation-info-section">
+                <p class="warning-text">Caution: this will modify the selected images. This cannot be undone.</p>
+                <p class="warning-text confirmation-info-section-txt">If you would like to preview how your images will look after being resized, please <a ng-click="showHideDialog('DownloadPreviewConfirmation')" style="text-decoration:underline; color: inherit">download a preview</a>. You can also <a ng-click="showHideDialog('DownloadBackupConfirmation')" style="text-decoration:underline; color: inherit">download a backup of the selected images</a>.</p>
+            </div>
+        </div>
+        <div class="preview-notice" ng-show="showInnerSection == 'Preview'">
+            <div class="confirmation-info-section">
+                <p class="preview-notice-text">A Preview zip will be downloaded automatically to your browser</p>
+                <p class="preview-notice-text confirmation-info-section-txt">If you are happy with the preview, select resize above to run the process again and save the newer version of the image to your Umbraco instance</p>
+                <p class="preview-notice-text confirmation-info-section-txt">Please note that missing files from the preview zip are the result of the resizing coming out larger than the original file size, this can happen when the image has been compressed by a third party previously</p>
+            </div>
+        </div>
+        <div class="confirmation-last-btns-container">
+            <uui-button type="button" label="Back" look="secondary" ng-click="toggleSection('Show Image Previews')" class="final-back-button">Back</uui-button>
+            <uui-button type="button" label="Resize" look="primary" color="positive" ng-click="resizeAndDownloadFiles(false)" class="primary-form-button resize-button">
+                Resize {{vm.selectedMediaItems.length}} Images
+            </uui-button>
+            <div class="loader resize-loader" style="display: none; align-items: center;">
+                <p class="confirmation-last-txt">Please wait, this may take a few minutes... <span class="progress-indicator"></span></p>
+            </div>
+        </div>
+        <div ng-if="vm.isProcessError">
+            <p class="" style="color:red; margin-top:1rem;">It looks like there has been an error when attempting to save new versions of your images. Once the process is finished you can reattempt</p>
+        </div>
+        <br>
+    </div>
+
+    <div class="section-containers results-screen" ng-show="showSection == 'Results'">
+        <div class="preview-view-intro">
+            <div class="text">
+                <h3>Resizing Complete</h3>
+                <p>
+                    {{ vm.numOfSuccessfullyResizedMediaItems }} out of {{vm.selectedMediaItems.length}} images were resized successfully.<br />
+                    Congratulations! You reduced the collective file sizes by
+                    <strong ng-if="vm.mbsSaved >= 0.01">{{vm.mbsSaved}}mb</strong>
+                    <strong ng-if="vm.mbsSaved < 0.01">{{vm.mbsSaved * 1024}}kb</strong>
+                    (from
+                    <span ng-if="vm.originalSize >= 0.01">{{vm.originalSize}}mb</span>
+                    <span ng-if="vm.originalSize < 0.01">{{vm.originalSize * 1024}}kb</span>
+                    to
+                    <span ng-if="vm.finalSize >= 0.01">{{vm.finalSize}}mb</span>
+                    <span ng-if="vm.finalSize < 0.01">{{vm.finalSize * 1024}}kb</span>
+                    ).
+                </p>
+            </div>
+            <div>
+                <uui-button type="button" label="Download as CSV" ng-click="vm.downloadCSVOfResults()" look="outline">Download Table as CSV</uui-button>
+                <uui-button type="button" label="Done" look="primary" ng-click="toggleSection('Images')" class="primary-form-button continue-button">Done</uui-button>
+            </div>
+        </div>
+        <div class="value-summary mb-0">
+            <div ng-if="maxWidthSpecified == true">
+                <h6 class="heading">New Max Width</h6>
+                <p>{{maxWidth}}px</p>
+            </div>
+            <div>
+                <h6 class="heading">Compression Level</h6>
+                <p ng-if="compressionLevel == 'none'">None</p>
+                <p ng-if="compressionLevel == 'low'">Minimum</p>
+                <p ng-if="compressionLevel == 'medium'">Medium</p>
+                <p ng-if="compressionLevel == 'high'">Maximum</p>
+            </div>
+        </div>
+        <div class="preview-list" ng-class="{ 'expanded': previewListState === 'expanded' }">
+            <uui-table aria-label="results table">
+
+                <!-- Apply styles to the uui-table-column to style the columns. You must have the same number of this elements as you have columns -->
+                <uui-table-column style="width: 5%;"></uui-table-column>
+                <uui-table-column style="width: 25%;"></uui-table-column>
+                <uui-table-column style="width: 10%;"></uui-table-column>
+                <uui-table-column style="width: 15%;"></uui-table-column>
+                <uui-table-column style="width: 15%;"></uui-table-column>
+                <uui-table-column style="width: 10%;"></uui-table-column>
+                <uui-table-column style="width: 10%;"></uui-table-column>
+                <uui-table-column style="width: 10%;"></uui-table-column>
+
+                <uui-table-head>
+                    <uui-table-head-cell>Status</uui-table-head-cell>
+                    <uui-table-head-cell>File Name</uui-table-head-cell>
+                    <uui-table-head-cell>Type</uui-table-head-cell>
+                    <uui-table-head-cell>Parent Folder</uui-table-head-cell>
+                    <uui-table-head-cell>Owner</uui-table-head-cell>
+                    <uui-table-head-cell>Width</uui-table-head-cell>
+                    <uui-table-head-cell>File Size</uui-table-head-cell>
+                    <uui-table-head-cell>File Size Reduction</uui-table-head-cell>
+                </uui-table-head>
+
+                <uui-table-row ng-repeat="item in vm.selectedMediaItems">
+                    <uui-table-cell>
+                        <uui-icon-registry-essential ng-if="item.recentlyResizedCorrectly">
+                            <uui-icon name="check" class="icon" style="color: #1f9554"></uui-icon>
+                        </uui-icon-registry-essential>
+                        <uui-icon-registry-essential ng-if="!item.recentlyResizedCorrectly && !item.originalSizeBetter">
+                            <uui-icon name="remove" class="icon" style="color: rgb(191, 33, 78); cursor:pointer" ng-click="showHideDialog('ResizeFailed')"></uui-icon>
+                        </uui-icon-registry-essential>
+                        <uui-icon-registry-essential ng-if="!item.recentlyResizedCorrectly && item.originalSizeBetter">
+                            <uui-icon name="alert" class="icon" style="color: rgb(191, 33, 78); cursor:pointer" ng-click="showHideDialog('IncreaseQuery')"></uui-icon>
+                        </uui-icon-registry-essential>
+                    </uui-table-cell>
+                    <uui-table-cell>
+                        <a class="item-name" target="_blank" href="/umbraco/#/media/media/edit/{{ item.id }}">{{ item.name }}</a>
+                        <div class="focal-point-reset-warning" ng-if="item.focalPointRecentlyReset" ng-click="showHideDialog('FocalPointReset')">
+                            <uui-icon-registry-essential>
+                                <uui-icon name="alert" class="flex-center"></uui-icon>
+                            </uui-icon-registry-essential>
+                            <span>Focal point was reset</span>
+                        </div>
+                    </uui-table-cell>
+                    <uui-table-cell class="grey-text">{{ item.fileType }}</uui-table-cell>
+                    <uui-table-cell class="grey-text">{{ item.folder }}</uui-table-cell>
+                    <uui-table-cell class="grey-text">{{ item.owner }}</uui-table-cell>
+                    <uui-table-cell ng-if="item.width == item.widthPostResizing"><span ng-if="item.recentlyResizedCorrectly">{{ item.widthPostResizing }}px</span></uui-table-cell>
+                    <uui-table-cell ng-if="item.width != item.widthPostResizing"><span ng-if="item.recentlyResizedCorrectly"><span class="td-line-through">{{ item.width }}px</span> {{ item.widthPostResizing }}px</span></uui-table-cell>
+                    <uui-table-cell><span ng-if="item.recentlyResizedCorrectly"><span class="td-line-through">{{ item.size }}mb</span> {{ item.fileSizePostResizingFixed }}mb</span></uui-table-cell>
+                    <uui-table-cell ng-class="{'file-size-increased': item.fileSizeReductionPercentage<0, 'file-size-decreased': item.fileSizeReductionPercentage>0}"><span ng-if="item.recentlyResizedCorrectly">{{ item.fileSizeReductionPercentage }}% <span class="increase-query" ng-if="item.fileSizeReductionPercentage<0" ng-click="showHideDialog('IncreaseQuery')">(?)</span></span></uui-table-cell>
+                </uui-table-row>
+            </uui-table>
+        </div>
+    </div>
+
+    <div class="section-containers" id="detail-content" ng-show="showSection == 'Videos'">
+        <div>
+            Resize all videos
+        </div>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'Info'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="Unsupported File Type">
+                <p>
+                    Files of this type cannot currently be resized by this package. Please consider resizing it manually.
+                </p>
+                <uui-button slot="actions" look="primary" color="default" ng-click="showHideDialog('Info')" label="OK">OK</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'DownloadPreviewsInfo'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="Download a Preview or Backup">
+                <h5>Download a Preview</h5>
+                <p>
+                    You can download a preview of your selected images to see how they will look when resized. This will not cause the current images that are saved to Umbraco to be modified in any way.
+                </p>
+                <h5>Download a Backup</h5>
+                <p>
+                    This will download a backup of your selected images in their current state.
+                </p>
+                <uui-button slot="actions" look="primary" color="default" ng-click="showHideDialog('DownloadPreviewsInfo')" label="OK">OK</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'CompressionLevelInfo'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="Compression Levels">
+                <p>
+                    A higher level of compression will result in a lower file size, but with a greater reduction in image quality.
+                </p>
+                <ul>
+                    <li>
+                        <strong>None:</strong>
+                        No extra compression added.
+                    </li>
+                    <li>
+                        <strong>Minimum:</strong>
+                        Minor compression added resulting in only modest file size savings. Quality reduction should be visually imperceptible.
+                    </li>
+                    <li>
+                        <strong>Medium (recommended):</strong>
+                        Mid-level compression added resulting in decent file size savings. Quality reduction should be barely noticeable visually.
+                    </li>
+                    <li>
+                        <strong>Maximum:</strong>
+                        A higher level of compression added resulting in the lowest file size. Visual quality likely to be affected.
+                    </li>
+                </ul>
+                <uui-button slot="actions" look="primary" color="default" ng-click="showHideDialog('CompressionLevelInfo')" label="OK">OK</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'FocalPointReset'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="The Focal Point was Reset">
+                <p>
+                    The focal point on this image was reset as part of the resize process. Please consider setting a new focal point if desired.
+                </p>
+                <uui-button slot="actions" look="primary" color="default" ng-click="showHideDialog('FocalPointReset')" label="OK">OK</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'IncreaseQuery'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="The size has increased?">
+                <p>
+                    When resizing an image, the output is re-encoded using standard compression settings.
+                </p>
+                <p>
+                    These settings may apply less compression than was originally used on the image, so even though the dimensions are smaller, the re-encoded file can end up larger in size.
+                </p>
+                <p>
+                    We would recommend taking note of this particular image and then running a manual compression on it to reduce its size OR choosing a larger amount of compression in our settings to ensure that the file is smaller
+                </p>
+                <uui-button slot="actions" look="primary" color="default" ng-click="showHideDialog('IncreaseQuery')" label="OK">OK</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'ResizeFailed'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="Image could not be processed">
+                <p>
+                    This image could not be resized. This is most commonly caused by the file being missing or inaccessible in Umbraco's media storage.
+                </p>
+                <p>
+                    Check that the file exists in the media library and has not been manually removed from the file system. If the problem persists, re-uploading the image through Umbraco should resolve it.
+                </p>
+                <uui-button slot="actions" look="primary" color="default" ng-click="showHideDialog('ResizeFailed')" label="OK">OK</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'DownloadPreviewConfirmation'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="Download a Preview">
+                <p ng-if="vm.selectedMediaItems.length <= 20">
+                    This will download a preview of your selected images so that you can see how they will look when resized.
+                </p>
+                <p ng-if="vm.selectedMediaItems.length > 20">
+                    This will download a preview of your selected images so that you can see how they will look when resized.<br /><br /><strong>As you have over 20 selected images, the preview will consist of 20 of your largest images.</strong>
+                </p>
+                <uui-button slot="actions" look="secondary" color="default" ng-click="showHideDialog('DownloadPreviewConfirmation')" label="Cancel">Cancel</uui-button>
+                <uui-button slot="actions" look="primary" color="default" ng-click="previewResize()" label="Confirm">Confirm</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+
+    <div class="dialog-container" ng-show="showDialog == 'DownloadBackupConfirmation'">
+        <uui-dialog class="dialog">
+            <uui-dialog-layout headline="Download a Backup">
+                <p>
+                    This will download a backup of your selected images in their current state.
+                </p>
+                <uui-button slot="actions" look="secondary" color="default" ng-click="showHideDialog('DownloadBackupConfirmation')" label="Cancel">Cancel</uui-button>
+                <uui-button slot="actions" look="primary" color="default" ng-click="downloadBackup()" label="Confirm">Confirm</uui-button>
+            </uui-dialog-layout>
+        </uui-dialog>
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3/dist/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.3/pako.min.js"></script>

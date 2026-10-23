@@ -1,0 +1,26 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<ImageResizerContentFilesPath>$(MSBuildThisFileDirectory)..\content\App_Plugins\DWL.ImageResizer\**\*</ImageResizerContentFilesPath>
+	</PropertyGroup>
+
+	<Target Name="CopyImageResizerAssets" BeforeTargets="Build">
+		<ItemGroup>
+			<ImageResizerContentFiles Include="$(ImageResizerContentFilesPath)" />
+		</ItemGroup>
+		<Message Text="Copying ImageResizer files: $(ImageResizerContentFilesPath) - #@(ImageResizerContentFiles->Count()) files" Importance="high" />
+		<Copy
+		  SourceFiles="@(ImageResizerContentFiles)"
+		  DestinationFiles="@(ImageResizerContentFiles->'$(MSBuildProjectDirectory)\App_Plugins\DWL.ImageResizer\%(RecursiveDir)%(Filename)%(Extension)')"
+		  SkipUnchangedFiles="true" />
+	</Target>
+
+	<Target Name="ClearImageResizerUsedAssets" BeforeTargets="Clean">
+		<ItemGroup>
+			<ImageResizerDir Include="$(MSBuildProjectDirectory)\App_Plugins\DWL.ImageResizer\" />
+		</ItemGroup>
+		<Message Text="Clear old ImageResizer data" Importance="high" />
+		<RemoveDir Directories="@(ImageResizerDir)" />
+	</Target>
+
+</Project>
