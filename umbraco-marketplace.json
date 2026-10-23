@@ -12,7 +12,7 @@
     "SyncContributorsFromRepository": false
   },
   "Category": "Developer Tools",
-  "IssueTrackerUrl": "",
+  "IssueTrackerUrl": "https://github.com/SamR-DWL/DigitalWonderlab.ImageResizer/issues",
   "Description": "Reduce the size of all your images across your umbraco instance. Big images can cause a multitude of problems including slow load times, bulky storage and take up unnecessary bandwidth. With a few simple clicks reduce the size of your images and even compress them",
   "LicenseTypes": [ "Free" ],
   "PackageType": "Package",

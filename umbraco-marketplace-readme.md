@@ -29,7 +29,7 @@ A backoffice dashboard that finds oversized images in your media library and shr
 5. Click Resize. The original media files are overwritten and this cannot be undone, so take a backup first
 
 ## Issues / Suggestions
-- To report an issue or suggest a feature, contact Digital Wonderlab at https://digitalwonderlab.com
+- To report an issue or suggest a feature, use the GitHub issue tracker: https://github.com/SamR-DWL/DigitalWonderlab.ImageResizer/issues
 
 ## Screenshots
 ![Image Resizer dashboard](https://i.postimg.cc/FzgSL9Xf/Screenshot-2026-10-23-163651.png)

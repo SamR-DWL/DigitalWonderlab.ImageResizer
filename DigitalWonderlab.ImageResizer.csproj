@@ -16,7 +16,9 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageIcon>image-resizer-icon.png</PackageIcon>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<!-- TODO: set PackageProjectUrl and RepositoryUrl once the public GitHub repository exists -->
+		<PackageProjectUrl>https://github.com/SamR-DWL/DigitalWonderlab.ImageResizer</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/SamR-DWL/DigitalWonderlab.ImageResizer</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 
 		<!-- Release builds ship no symbols, so no build-machine .pdb path ends up inside the DLL -->
 		<DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>

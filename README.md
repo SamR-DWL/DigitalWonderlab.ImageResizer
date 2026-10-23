@@ -33,8 +33,7 @@ A backoffice dashboard that finds oversized images in your media library and shr
 - Processing runs on the web server in batches of 25 and loads each image into memory, so very large libraries take a while
 
 ### Issues / Suggestions
-- To report an issue or suggest a feature, contact Digital Wonderlab at https://digitalwonderlab.com
-<!-- TODO: replace with the GitHub issue tracker link once the public repository exists -->
+- To report an issue or suggest a feature, use the GitHub issue tracker: https://github.com/SamR-DWL/DigitalWonderlab.ImageResizer/issues
 
 ### Screenshots
 ![Image Resizer dashboard](https://i.postimg.cc/FzgSL9Xf/Screenshot-2026-10-23-163651.png)
