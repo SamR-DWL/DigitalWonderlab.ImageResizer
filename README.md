@@ -1,0 +1,1 @@
+# DigitalWonderlab.ImageResizer
