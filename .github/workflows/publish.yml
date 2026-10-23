@@ -1,0 +1,61 @@
+name: Publish to NuGet
+
+# Publishes the package to nuget.org using NuGet Trusted Publishing (OIDC, no stored API key).
+# The nuget.org trusted publishing policy must reference this file name (publish.yml),
+# repository SamR-DWL/DigitalWonderlab.ImageResizer and package owner SamR-DWL.
+#
+# Trigger: push a tag matching the csproj version, e.g.
+#   git tag v1.0.0 && git push origin v1.0.0
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for NuGet/login to mint a short-lived API key via OIDC
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x # builds the net8.0 and net9.0 targets too via downloaded targeting packs
+
+      - name: Check tag matches csproj version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=$(grep -oP '<Version>\K[^<]+' DigitalWonderlab.ImageResizer.csproj)
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$VERSION" != "$TAG" ]; then
+            echo "Tag v$TAG does not match csproj <Version>$VERSION</Version>"; exit 1
+          fi
+
+      - name: Pack
+        run: dotnet pack DigitalWonderlab.ImageResizer.csproj -c Release -o artifacts
+
+      - name: NuGet login (trusted publishing)
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: SamR-DWL # nuget.org profile that owns the trusted publishing policy
+
+      - name: Push to nuget.org
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --source https://api.nuget.org/v3/index.json
+          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
+          --skip-duplicate
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: artifacts/*.nupkg
